@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.py[cod]
+output/*.xlsx
+output/*.json
+# data/latestNAV_Reports.xlsx — not ignored: MFD distribution repos often commit the master.
+# If you prefer Releases only, add that path here.
