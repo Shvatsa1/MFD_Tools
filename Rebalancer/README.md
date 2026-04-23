@@ -1,102 +1,82 @@
-# MFD Rebalancer — run from source (no Windows `.exe`)
+# Rebalancer — get transaction suggestions (Python)
 
-This folder is a **minimal Python-only** build of the rebalancer: the same `build_mfd_pack.py` entry point as the frozen pack, with **no** PyInstaller, **no** SmartScreen warnings, and it works on **macOS, Linux, and Windows**.
+This tool reads your clients’ **holdings** and the **fund master** (`data/latestNAV_Reports.xlsx`) and writes **`output/generate_transactions.xlsx`**: suggested switches and supporting sheets (Parameters, AllClientHoldings, Check tab, copy of the NAV data used).
 
-**Repository layout:** this tree lives under the **`MFD_Tools`** repo as **`Rebalancer/`**. Open a terminal **here** (inside `Rebalancer`) for all setup scripts and `python build_mfd_pack.py`.
-
----
-
-## Distributor GitHub repo (MFD-facing only)
-
-This folder is the MFD-facing app. It does **not** include the upstream “pack creator” (`tools/assemble_mfd_source_distribution.py`); that stays in the development repo.
-
-| Topic | Guidance |
-|--------|----------|
-| **`latestNAV_Reports.xlsx` in git** | Yes. You can commit updated copies whenever you refresh NAV; MFDs `git pull` to update. The file is large and binary, so history grows over time—acceptable for a small repo, or use **Git LFS** if you prefer. |
-| **Client holdings** | **Never** commit. Only the MFD’s machine; not this repo. |
-| **Public vs private** | **Public** is usually fine for *code + AMFI-style NAV master* (no PII, no per-client data). If you are cautious about visibility or your terms of use, use a **private** repo and add only GitHub users you want (`Settings → Collaborators` or an org team). |
-| **Refreshing the repo from development** | In the main project, run `python tools/assemble_mfd_source_distribution.py` with `-o` pointing at this `Rebalancer` folder (and `--include-nav` for the workbook), then commit and push **MFD_Tools**. |
+Works on **Windows, macOS, and Linux**. You need **Python 3.10+**; no other paid software.
 
 ---
 
-## What you need (once per machine)
+## Get this folder
 
-1. **Python 3.10+** from [python.org](https://www.python.org/downloads/) (Windows: tick **Add python.exe to PATH**).
-2. Clone **MFD_Tools** and **`cd Rebalancer`**, or unzip a release that contains this folder.
-3. **NAV master** `data/latestNAV_Reports.xlsx` (must include **Final** columns U–X). It is usually **committed** in this repo; after `git pull`, you get updates. If you only have a copy without it, get one from your distributor.
+- **If you have the repo on GitHub (public):** you do **not** need a GitHub account. Open the green **Code** button → **Download ZIP**, unzip, then open the **`Rebalancer`** folder.  
+- **Optional:** with a `git` install you can `git clone` a public URL without logging in.  
+- **Private** repos need access (e.g. a GitHub login that was invited) or a zip shared by the publisher.
 
----
-
-## Quickest path (create venv and install)
-
-**Windows (double-click or run in cmd):** `1_setup_venv.bat`  
-**macOS / Linux (Terminal):** `chmod +x 1_setup_venv.sh && ./1_setup_venv.sh`  
-**Windows PowerShell:** `.\1_setup_venv.ps1`
-
-Or manually:
-
-```text
-python3 -m venv .venv
-```
-
-Activate:
-
-- **Windows (cmd):** `.venv\Scripts\activate.bat`
-- **Windows (PowerShell):** `.venv\Scripts\Activate.ps1`
-- **macOS / Linux:** `source .venv/bin/activate`
-
-```text
-pip install -r requirements.txt
-copy mfd_pack.example.ini mfd_pack.ini
-```
-
-(On Unix use `cp` instead of `copy`.)
+The NAV workbook should already be in **`Rebalancer/data/latestNAV_Reports.xlsx`** in the usual distribution. If you update the pack later, replace that file (or the whole folder) the same way the publisher sends it.
 
 ---
 
-## Before each run
+## One-time setup (each laptop)
 
-1. Put `latestNAV_Reports.xlsx` in **`data/`** (if not already there).
-2. Put one holdings file per client in **`data/clients/by_client/`** (filename = client id), **or** set `clients_folder` in `mfd_pack.ini`.
-3. Edit **`mfd_pack.ini`**: `master`, `output`, `archetype`, `new_cash`, and optionally glide (`age_based`, `client_risk_pref`) or new funds (`allow_new_funds`, `fund_choices`).
+1. Install **Python 3.10+** from [python.org](https://www.python.org/downloads/) (Windows: check **Add python.exe to PATH**).
+2. Open a **terminal** in this **`Rebalancer`** folder (this folder is your working directory for every step below).
+3. Create a virtual environment and install dependencies:
 
----
+   **Windows (simplest):** double-click or run in Command Prompt: **`1_setup_venv.bat`**  
+   **macOS / Linux:** `chmod +x 1_setup_venv.sh && ./1_setup_venv.sh`  
+   **Or manually:**  
+   - `python -m venv .venv`  
+   - **Activate**  
+     - Windows cmd: `.venv\Scripts\activate.bat`  
+     - Windows PowerShell: `.venv\Scripts\Activate.ps1`  
+     - macOS/Linux: `source .venv/bin/activate`  
+   - `pip install -r requirements.txt`  
+   - `copy mfd_pack.example.ini mfd_pack.ini` (on macOS/Linux: `cp mfd_pack.example.ini mfd_pack.ini`)
 
-## Run the pack
-
-```text
-python build_mfd_pack.py
-```
-
-**Bootstrap** client list for the glide workbook (optional):
-
-```text
-python build_mfd_pack.py --bootstrap-client-risk
-```
-
-**Explicit paths** (no INI): see docstring at the top of `build_mfd_pack.py`.
-
-Default output: `output/generate_transactions.xlsx`.
+After setup, every time you work in a **new** terminal, **activate the venv** again, then run the commands in the next section.
 
 ---
 
-## Differences from the Windows `.exe` pack
+## Ideal flow: run a rebalance and open results
 
-| `.exe` pack | This source pack |
-|-------------|------------------|
-| One download, no Python | Python + venv + `pip install -r requirements.txt` |
-| Windows only | **macOS, Linux, Windows** |
-| Can trigger SmartScreen | No unsigned `.exe` |
-| `MFRebalancerV1.1.exe` with cwd beside data | `python build_mfd_pack.py` with cwd in this folder |
+1. **Activate** the virtual environment (see above), current directory = this **`Rebalancer`** folder.
+2. **Client holdings (Format B):** one file per client in **`data/clients/by_client/`**  
+   - The **file name** (without extension) = that client’s **client id** (e.g. `Client_A.xlsx`).  
+   - Supported: `.xlsx`, `.xls`, `.csv` with a header row; the tool finds the ISIN and units columns automatically.
+3. **Edit `mfd_pack.ini`** in Notepad (or any editor): set  
+   - `clients_folder` (default: `data\clients\by_client` on Windows)  
+   - `master` = path to the NAV file (default: `data\latestNAV_Reports.xlsx`)  
+   - `archetype` = `Averse` / `Moderate` / `Aggressive` (unless you use glide, below)  
+   - `new_cash` = new money to invest in rupees, or `0`  
+   - Uncomment other lines only when you use **glide** or **new-fund** options (see below).
+4. **Run:**  
+   `python build_mfd_pack.py`  
+5. **Output:** open **`output/generate_transactions.xlsx`**. The **Transactions** sheet lists suggested actions; use **Check Tab** and other sheets as needed.
 
-Functionality of `build_mfd_pack.py` and `mfd_pack.ini` is the same as the V1.1 frozen app.
+If something fails, read the messages in the terminal; often it is a missing file path or an empty `clients` folder.
 
 ---
 
-## Re-sync from upstream development (maintainers only)
+## Optional: age-based “glide” (target mix depends on each client’s age)
 
-In the **main** development repo (`MF_rebalancer`), from its root:
+1. Put all client holding files in **`data/clients/by_client/`** as above.  
+2. Run: `python build_mfd_pack.py --bootstrap-client-risk`  
+   This builds/updates **`data/client_risk_pref.xlsx`**.  
+3. Open **`data/client_risk_pref.xlsx`** → sheet **ClientAges** → set **age** and **risk_preference** (Averse / Moderate / Aggressive) for each client.  
+4. In **`mfd_pack.ini`**, uncomment:  
+   `age_based = true`  
+   and  
+   `client_risk_pref = data\client_risk_pref.xlsx` (use `/` on macOS/Linux if you prefer)  
+5. Run again: `python build_mfd_pack.py`
 
-`python tools/assemble_mfd_source_distribution.py -o path/to/MFD_Tools/Rebalancer`  
-(optional) `... --include-nav`  
-Then commit and push the **MFD_Tools** repository.
+---
+
+## Optional: new-fund “sleeves” (FundChoices)
+
+Only if the publisher has enabled this and you have a FundChoices workbook. In **`mfd_pack.ini`**, uncomment **`allow_new_funds`** and **`fund_choices`**, and point to the file they gave you. Then `python build_mfd_pack.py`.
+
+---
+
+## Your clients’ data
+
+Do **not** put client names, account details, or holdings in public issues, public uploads, or shared drives meant for **strangers**. Work on your own computer or approved internal storage.
