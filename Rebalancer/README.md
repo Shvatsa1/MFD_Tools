@@ -44,25 +44,65 @@ You need **Python 3.10 or newer**.
 
 ---
 
-## 3. One-time setup of this folder
+## 3. Open a terminal and move into the `Rebalancer` folder
 
-Open a terminal in the **`Rebalancer`** folder.
+All following steps assume the terminal's working directory is the **`Rebalancer`** folder.
 
-- **Windows tip:** in File Explorer, hold `Shift`, right-click the `Rebalancer` folder, choose **Open in Terminal** (or **Open command window here**).
-- **macOS tip:** right-click the `Rebalancer` folder in Finder → **New Terminal at Folder** (enable in System Settings → Keyboard → Keyboard Shortcuts → Services if hidden).
+### Windows
+
+**Open a terminal (Command Prompt):**
+
+- Press `Win + R`, type `cmd`, press `Enter`. **Or** press the `Win` key, type `cmd`, press `Enter`.
+- Alternative: in File Explorer, browse to the `Rebalancer` folder, then hold `Shift` and right-click the folder → **Open in Terminal** (Windows 11) or **Open command window here**. This skips the `cd` step.
+
+**Change to the folder** (replace the path with where you unzipped):
+
+```
+cd /d "C:\Users\YOUR_USER\Downloads\MFD_Tools-main\Rebalancer"
+```
+
+Tips:
+- The `/d` flag lets `cd` also switch drive letters (e.g. from `C:` to `D:`). Without it you'd also need `D:` first.
+- Quotes are required only if the path has spaces; using them always is safe.
+
+### macOS
+
+**Open a terminal:**
+
+- Press `Cmd + Space` (Spotlight), type `Terminal`, press `Return`.
+- Alternative: in Finder, right-click the `Rebalancer` folder → **New Terminal at Folder**. This skips the `cd` step. If the option is missing, enable it in **System Settings → Keyboard → Keyboard Shortcuts → Services → Files and Folders → "New Terminal at Folder"**.
+
+**Change to the folder** (replace the path with where you unzipped):
+
+```
+cd ~/Downloads/MFD_Tools-main/Rebalancer
+```
+
+Tips:
+- `~` is your home folder, e.g. `/Users/yourname`.
+- Quote paths with spaces: `cd "~/My Downloads/MFD_Tools-main/Rebalancer"`.
+
+Verify you are in the right folder:
+
+- Windows: `dir` (should list `build_mfd_pack.py`, `requirements.txt`, etc.)
+- macOS: `ls` (same files visible).
+
+---
+
+## 4. One-time setup of this folder
 
 ### Windows
 
 Double-click **`1_setup_venv.bat`** in the `Rebalancer` folder.
 
-If double-click does nothing, open **Command Prompt** in the folder and run:
+If double-click does nothing, open a terminal in the folder (section 3) and run:
 ```
 1_setup_venv.bat
 ```
 
 ### macOS
 
-In Terminal, in the `Rebalancer` folder:
+In the terminal opened in section 3 (working directory = `Rebalancer`), run:
 ```
 chmod +x 1_setup_venv.sh
 ./1_setup_venv.sh
@@ -72,9 +112,9 @@ The script creates a local Python environment (`.venv`), installs the libraries 
 
 ---
 
-## 4. Each time you use the tool
+## 5. Each time you use the tool
 
-Open a terminal in the `Rebalancer` folder and **activate the environment**:
+Open a terminal and `cd` into the `Rebalancer` folder (see section 3), then **activate the environment**:
 
 - **Windows (Command Prompt):**
   ```
@@ -93,7 +133,7 @@ You will see `(.venv)` at the start of the prompt when active.
 
 ---
 
-## 5. Add client data
+## 6. Add client data
 
 Place **one holdings file per client** in **`data/clients/by_client/`**:
 
@@ -105,7 +145,7 @@ Update the **fund master** when a refreshed copy is supplied: replace `data/late
 
 ---
 
-## 6. Configure `mfd_pack.ini`
+## 7. Configure `mfd_pack.ini`
 
 Open **`mfd_pack.ini`** in Notepad (Windows) or TextEdit (macOS) and set:
 
@@ -114,11 +154,11 @@ Open **`mfd_pack.ini`** in Notepad (Windows) or TextEdit (macOS) and set:
 - `archetype` — `Averse`, `Moderate`, or `Aggressive`.
 - `new_cash` — fresh money to invest in rupees, or `0`.
 
-Lines beginning with `;` are off. Remove the `;` to enable optional features (see sections 8 and 9).
+Lines beginning with `;` are off. Remove the `;` to enable optional features (see sections 9 and 10).
 
 ---
 
-## 7. Run and view results
+## 8. Run and view results
 
 With the environment active, in the `Rebalancer` folder:
 
@@ -136,7 +176,7 @@ The **Transactions** sheet lists suggested actions per client. Other sheets (Par
 
 ---
 
-## 8. Optional: per-client age-based glide
+## 9. Optional: per-client age-based glide
 
 For target equity/defensive that depends on each client's age:
 
@@ -157,7 +197,7 @@ For target equity/defensive that depends on each client's age:
 
 ---
 
-## 9. Optional: new-fund "sleeves"
+## 10. Optional: new-fund "sleeves"
 
 If a FundChoices workbook has been supplied, in `mfd_pack.ini` remove the leading `;` from `allow_new_funds` and `fund_choices` and point the latter to that file. Then run `python build_mfd_pack.py`.
 
