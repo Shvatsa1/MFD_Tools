@@ -1,82 +1,168 @@
-# Rebalancer — get transaction suggestions (Python)
+# Rebalancer
 
-This tool reads your clients’ **holdings** and the **fund master** (`data/latestNAV_Reports.xlsx`) and writes **`output/generate_transactions.xlsx`**: suggested switches and supporting sheets (Parameters, AllClientHoldings, Check tab, copy of the NAV data used).
+Reads each client's mutual-fund **holdings** plus the supplied **fund master** workbook and writes **`output/generate_transactions.xlsx`** with suggested switches and supporting sheets (Parameters, AllClientHoldings, Check tab, copy of the NAV data used).
 
-Works on **Windows, macOS, and Linux**. You need **Python 3.10+**; no other paid software.
-
----
-
-## Get this folder
-
-- **If you have the repo on GitHub (public):** you do **not** need a GitHub account. Open the green **Code** button → **Download ZIP**, unzip, then open the **`Rebalancer`** folder.  
-- **Optional:** with a `git` install you can `git clone` a public URL without logging in.  
-- **Private** repos need access (e.g. a GitHub login that was invited) or a zip shared by the publisher.
-
-The NAV workbook should already be in **`Rebalancer/data/latestNAV_Reports.xlsx`** in the usual distribution. If you update the pack later, replace that file (or the whole folder) the same way the publisher sends it.
+Runs on **Windows 10/11** and **macOS**. No paid software.
 
 ---
 
-## One-time setup (each laptop)
+## 1. Download this folder
 
-1. Install **Python 3.10+** from [python.org](https://www.python.org/downloads/) (Windows: check **Add python.exe to PATH**).
-2. Open a **terminal** in this **`Rebalancer`** folder (this folder is your working directory for every step below).
-3. Create a virtual environment and install dependencies:
+1. Go to the project page on GitHub.
+2. Click the green **Code** button → **Download ZIP**.
+3. Unzip. Open the **`Rebalancer`** folder. All steps below assume this folder is the **working directory**.
 
-   **Windows (simplest):** double-click or run in Command Prompt: **`1_setup_venv.bat`**  
-   **macOS / Linux:** `chmod +x 1_setup_venv.sh && ./1_setup_venv.sh`  
-   **Or manually:**  
-   - `python -m venv .venv`  
-   - **Activate**  
-     - Windows cmd: `.venv\Scripts\activate.bat`  
-     - Windows PowerShell: `.venv\Scripts\Activate.ps1`  
-     - macOS/Linux: `source .venv/bin/activate`  
-   - `pip install -r requirements.txt`  
-   - `copy mfd_pack.example.ini mfd_pack.ini` (on macOS/Linux: `cp mfd_pack.example.ini mfd_pack.ini`)
-
-After setup, every time you work in a **new** terminal, **activate the venv** again, then run the commands in the next section.
+(No GitHub account is needed to download a public repository.)
 
 ---
 
-## Ideal flow: run a rebalance and open results
+## 2. Install Python (one time per computer)
 
-1. **Activate** the virtual environment (see above), current directory = this **`Rebalancer`** folder.
-2. **Client holdings (Format B):** one file per client in **`data/clients/by_client/`**  
-   - The **file name** (without extension) = that client’s **client id** (e.g. `Client_A.xlsx`).  
-   - Supported: `.xlsx`, `.xls`, `.csv` with a header row; the tool finds the ISIN and units columns automatically.
-3. **Edit `mfd_pack.ini`** in Notepad (or any editor): set  
-   - `clients_folder` (default: `data\clients\by_client` on Windows)  
-   - `master` = path to the NAV file (default: `data\latestNAV_Reports.xlsx`)  
-   - `archetype` = `Averse` / `Moderate` / `Aggressive` (unless you use glide, below)  
-   - `new_cash` = new money to invest in rupees, or `0`  
-   - Uncomment other lines only when you use **glide** or **new-fund** options (see below).
-4. **Run:**  
-   `python build_mfd_pack.py`  
-5. **Output:** open **`output/generate_transactions.xlsx`**. The **Transactions** sheet lists suggested actions; use **Check Tab** and other sheets as needed.
+You need **Python 3.10 or newer**.
 
-If something fails, read the messages in the terminal; often it is a missing file path or an empty `clients` folder.
+### Windows
 
----
+1. Open https://www.python.org/downloads/windows/ → **Download Python 3.x.x** (64-bit).
+2. Run the installer. **Tick "Add python.exe to PATH"** at the bottom of the first screen, then **Install Now**.
+3. Open **Command Prompt** (press `Win`, type `cmd`, press Enter) and check:
+   ```
+   python --version
+   ```
+   You should see `Python 3.10.x` or higher.
 
-## Optional: age-based “glide” (target mix depends on each client’s age)
+### macOS
 
-1. Put all client holding files in **`data/clients/by_client/`** as above.  
-2. Run: `python build_mfd_pack.py --bootstrap-client-risk`  
-   This builds/updates **`data/client_risk_pref.xlsx`**.  
-3. Open **`data/client_risk_pref.xlsx`** → sheet **ClientAges** → set **age** and **risk_preference** (Averse / Moderate / Aggressive) for each client.  
-4. In **`mfd_pack.ini`**, uncomment:  
-   `age_based = true`  
-   and  
-   `client_risk_pref = data\client_risk_pref.xlsx` (use `/` on macOS/Linux if you prefer)  
-5. Run again: `python build_mfd_pack.py`
+1. Open https://www.python.org/downloads/macos/ → **Download Python 3.x.x**.
+2. Open the downloaded `.pkg` and follow the installer.
+3. Open **Terminal** (press `Cmd+Space`, type `Terminal`, press Enter) and check:
+   ```
+   python3 --version
+   ```
+   You should see `Python 3.10.x` or higher.
+
+(macOS users may also use `brew install python` if Homebrew is installed.)
 
 ---
 
-## Optional: new-fund “sleeves” (FundChoices)
+## 3. One-time setup of this folder
 
-Only if the publisher has enabled this and you have a FundChoices workbook. In **`mfd_pack.ini`**, uncomment **`allow_new_funds`** and **`fund_choices`**, and point to the file they gave you. Then `python build_mfd_pack.py`.
+Open a terminal in the **`Rebalancer`** folder.
+
+- **Windows tip:** in File Explorer, hold `Shift`, right-click the `Rebalancer` folder, choose **Open in Terminal** (or **Open command window here**).
+- **macOS tip:** right-click the `Rebalancer` folder in Finder → **New Terminal at Folder** (enable in System Settings → Keyboard → Keyboard Shortcuts → Services if hidden).
+
+### Windows
+
+Double-click **`1_setup_venv.bat`** in the `Rebalancer` folder.
+
+If double-click does nothing, open **Command Prompt** in the folder and run:
+```
+1_setup_venv.bat
+```
+
+### macOS
+
+In Terminal, in the `Rebalancer` folder:
+```
+chmod +x 1_setup_venv.sh
+./1_setup_venv.sh
+```
+
+The script creates a local Python environment (`.venv`), installs the libraries listed in `requirements.txt`, and creates `mfd_pack.ini` from the template.
 
 ---
 
-## Your clients’ data
+## 4. Each time you use the tool
 
-Do **not** put client names, account details, or holdings in public issues, public uploads, or shared drives meant for **strangers**. Work on your own computer or approved internal storage.
+Open a terminal in the `Rebalancer` folder and **activate the environment**:
+
+- **Windows (Command Prompt):**
+  ```
+  .venv\Scripts\activate.bat
+  ```
+- **Windows (PowerShell):**
+  ```
+  .venv\Scripts\Activate.ps1
+  ```
+- **macOS:**
+  ```
+  source .venv/bin/activate
+  ```
+
+You will see `(.venv)` at the start of the prompt when active.
+
+---
+
+## 5. Add client data
+
+Place **one holdings file per client** in **`data/clients/by_client/`**:
+
+- File name (without extension) is the client id, e.g. `CLIENT_001.xlsx` → client id `CLIENT_001`.
+- Accepted formats: `.xlsx`, `.xls`, `.csv`. The file must have a header row.
+- The tool detects the ISIN column and the units column automatically.
+
+Update the **fund master** when a refreshed copy is supplied: replace `data/latestNAV_Reports.xlsx` with the new file (same name, same location).
+
+---
+
+## 6. Configure `mfd_pack.ini`
+
+Open **`mfd_pack.ini`** in Notepad (Windows) or TextEdit (macOS) and set:
+
+- `clients_folder` — folder with client files (default: `data\clients\by_client`).
+- `master` — fund master path (default: `data\latestNAV_Reports.xlsx`).
+- `archetype` — `Averse`, `Moderate`, or `Aggressive`.
+- `new_cash` — fresh money to invest in rupees, or `0`.
+
+Lines beginning with `;` are off. Remove the `;` to enable optional features (see sections 8 and 9).
+
+---
+
+## 7. Run and view results
+
+With the environment active, in the `Rebalancer` folder:
+
+```
+python build_mfd_pack.py
+```
+
+Open the result:
+
+```
+output\generate_transactions.xlsx
+```
+
+The **Transactions** sheet lists suggested actions per client. Other sheets (Parameters, AllClientHoldings, Check Tab, NAV copy) are for review and audit.
+
+---
+
+## 8. Optional: per-client age-based glide
+
+For target equity/defensive that depends on each client's age:
+
+1. With holding files in `data/clients/by_client/`, run:
+   ```
+   python build_mfd_pack.py --bootstrap-client-risk
+   ```
+2. Open `data/client_risk_pref.xlsx` → sheet **ClientAges** → fill **age** and **risk_preference** (Averse / Moderate / Aggressive) for each client.
+3. In `mfd_pack.ini` remove the leading `;` on these lines:
+   ```
+   age_based = true
+   client_risk_pref = data\client_risk_pref.xlsx
+   ```
+4. Run again:
+   ```
+   python build_mfd_pack.py
+   ```
+
+---
+
+## 9. Optional: new-fund "sleeves"
+
+If a FundChoices workbook has been supplied, in `mfd_pack.ini` remove the leading `;` from `allow_new_funds` and `fund_choices` and point the latter to that file. Then run `python build_mfd_pack.py`.
+
+---
+
+## Client data note
+
+Keep client holdings and any client-specific files on your own computer or approved internal storage. Do not upload them to public locations.
